@@ -11,5 +11,29 @@ public class SessionStatusEntity {
     @Column(name = "id_session")
     private Long sessionId;
     @Column(name = "session_status")
-    private boolean sessionStatus;
+    private String sessionStatus;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Long sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public String isSessionStatus() {
+        return sessionStatus;
+    }
+
+    public void setSessionStatus(String sessionStatus) {
+        this.sessionStatus = sessionStatus;
+    }
 }

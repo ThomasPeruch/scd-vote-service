@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SessionStatusRepository extends JpaRepository<SessionStatusEntity, Long> {
-    boolean existsBySessionIdAndSessionStatus(Long sessionId, boolean sessionStatus);
 }

@@ -9,6 +9,6 @@ CREATE TABLE if not exists public.vote (
 CREATE TABLE if not exists public.session_status(
 	id bigserial not null,
 	id_session bigserial NOT NULL,
-	session_status boolean NOT NULL,
+	session_status varchar(15) ,
 	primary key (id)
 );
