@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "vote"
+      POSTGRES_DB: "vote"
+    volumes:
+      - "./assets/sql/init.sql:/docker-entrypoint-initdb.d/init.sql"
+    ports:
+      - "5433:5432"
