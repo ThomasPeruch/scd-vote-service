@@ -16,6 +16,10 @@ public class SessionStatusService {
     @Autowired
     private Gson gson;
 
+    public boolean isSessionOpen(Long id){
+        return statusRepository.existsBySessionIdAndSessionStatus(id, "OPEN");
+    }
+
     public void refreshSessionStatus(Message message){
         byte[] messageConverted = convertMessageToBytes(message);
         String json = convertBytesToJson(messageConverted);
