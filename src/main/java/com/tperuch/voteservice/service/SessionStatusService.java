@@ -3,6 +3,7 @@ package com.tperuch.voteservice.service;
 import com.google.gson.Gson;
 import com.tperuch.voteservice.RabbitMqListener;
 import com.tperuch.voteservice.dto.SessionStatusDto;
+import com.tperuch.voteservice.dto.response.SessionStatusResponseDto;
 import com.tperuch.voteservice.entity.SessionStatusEntity;
 import com.tperuch.voteservice.repository.SessionStatusRepository;
 import org.slf4j.Logger;
@@ -11,6 +12,8 @@ import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class SessionStatusService {
     @Autowired
@@ -18,8 +21,22 @@ public class SessionStatusService {
     @Autowired
     private Gson gson;
     Logger logger = LoggerFactory.getLogger(SessionStatusService.class);
+
     public boolean isSessionOpen(Long id){
         return statusRepository.existsBySessionIdAndSessionStatus(id, "OPEN");
+    }
+
+    public List<SessionStatusResponseDto> getAllSessions(){
+        List<SessionStatusEntity> entities = statusRepository.findAll();
+        return entities.stream().map(this::mapToSessionStatusResponseDto).toList();
+    }
+
+    private SessionStatusResponseDto mapToSessionStatusResponseDto(SessionStatusEntity entity) {
+        SessionStatusResponseDto dto = new SessionStatusResponseDto();
+        dto.setIdSession(entity.getSessionId());
+        dto.setSessionStatus(entity.getSessionStatus());
+        dto.setId(entity.getId());
+        return dto;
     }
 
     public void refreshSessionStatus(Message message){
