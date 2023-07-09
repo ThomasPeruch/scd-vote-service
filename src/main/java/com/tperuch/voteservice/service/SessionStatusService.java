@@ -25,7 +25,13 @@ public class SessionStatusService {
         String json = convertBytesToJson(messageConverted);
         SessionStatusDto sessionStatus = convertJsonToDto(json);
         SessionStatusEntity entity = convertDtoToEntity(sessionStatus);
-        statusRepository.save(entity);
+        updateEntity(entity);
+    }
+
+    private void updateEntity(SessionStatusEntity entity) {
+        SessionStatusEntity statusEntity = statusRepository.findBySessionId(entity.getSessionId());
+        statusEntity.setSessionStatus(entity.getSessionStatus());
+        statusRepository.save(statusEntity);
     }
 
     private SessionStatusEntity convertDtoToEntity(SessionStatusDto sessionStatus) {

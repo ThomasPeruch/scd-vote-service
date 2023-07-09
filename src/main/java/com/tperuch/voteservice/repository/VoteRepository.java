@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VoteRepository extends JpaRepository<VoteEntity, Long> {
+    boolean existsBySessionIdAndAssociateId(Long sessionId, Long associateId);
 }

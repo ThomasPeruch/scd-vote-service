@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface SessionStatusRepository extends JpaRepository<SessionStatusEntity, Long> {
 
     boolean existsBySessionIdAndSessionStatus(Long id, String sessionStatus);
+
+    SessionStatusEntity findBySessionId(Long id);
 }

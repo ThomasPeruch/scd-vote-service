@@ -29,7 +29,7 @@ public class SessionStatusEntity {
         this.sessionId = sessionId;
     }
 
-    public String isSessionStatus() {
+    public String getSessionStatus() {
         return sessionStatus;
     }
 
