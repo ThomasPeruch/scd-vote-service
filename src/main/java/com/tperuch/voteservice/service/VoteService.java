@@ -6,6 +6,8 @@ import com.tperuch.voteservice.entity.VoteEntity;
 import com.tperuch.voteservice.repository.VoteRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +21,10 @@ public class VoteService {
     private VoteRepository voteRepository;
     @Autowired
     private ModelMapper modelMapper;
+    Logger logger = LoggerFactory.getLogger(VoteService.class);
 
     public VoteDto saveVote(VoteDto voteDto){
+        logger.info("Salvando voto - id do associado:{}", voteDto.getIdAssociate());
         if(!isSessionOpen(voteDto.getIdSession())){
             throw new EntityNotFoundException("A sessão informada não esta aberta para votação, escolha outra");
         }
@@ -29,11 +33,13 @@ public class VoteService {
                     "O associado informado ja votou nessa sessão de votação - ID do associado "+voteDto.getIdAssociate()+ " - ID da sessão "+voteDto.getIdSession());
         }
         VoteEntity entity = buildVoteEntity(voteDto);
+        logger.info("Salvando voto");
         VoteEntity savedEntity = voteRepository.save(entity);
         return modelMapper.map(savedEntity, VoteDto.class);
     }
 
     private boolean isSessionOpen(Long sessionId) {
+        logger.info("Verificando status da sessão - id da sessão:{}", sessionId);
         return sessionStatusService.isSessionOpen(sessionId);
     }
 
@@ -41,15 +47,17 @@ public class VoteService {
         if(isSessionOpen(sessionId)){
             throw new IllegalArgumentException("Essa votação segue em aberto, para visualizar o resultado selecione uma já encerrada");
         }
-        return getVotesFromSession(sessionId);
-    }
-
-    private VoteResultResponseDto getVotesFromSession(Long sessionId) {
-        List<VoteEntity> votes = voteRepository.findBySessionId(sessionId);
+        List<VoteEntity> votes = getVotesFromSession(sessionId);
         return buildResultDto(votes, sessionId);
     }
 
+    private List<VoteEntity> getVotesFromSession(Long sessionId) {
+        logger.info("Buscando votos da sessão {}", sessionId);
+        return voteRepository.findBySessionId(sessionId);
+    }
+
     private VoteResultResponseDto buildResultDto(List<VoteEntity> votes, Long sessionId) {
+        logger.info("Contando votos da sessão {} e mapeando dados de retorno", sessionId);
         int votesForYes = countVotesForYes(votes);
         int votesForNo = countVotesForNo(votes);
         VoteResultResponseDto voteResultResponseDto = new VoteResultResponseDto();
@@ -82,6 +90,7 @@ public class VoteService {
     }
 
     private boolean associateAlreadyVotedInSession(Long idSession, Long idAssociate) {
+        logger.info("Verificando se o associado {} ja votou na sessão {}", idAssociate, idSession);
         return voteRepository.existsBySessionIdAndAssociateId(idSession, idAssociate);
     }
 
