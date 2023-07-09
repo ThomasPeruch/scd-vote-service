@@ -49,10 +49,14 @@ public class SessionStatusService {
     }
 
     private void updateEntity(SessionStatusEntity entity) {
-        SessionStatusEntity statusEntity = statusRepository.findBySessionId(entity.getSessionId());
+        SessionStatusEntity statusEntity = getSessionBySessionId(entity.getSessionId());
         statusEntity.setSessionStatus(entity.getSessionStatus());
         logger.info("Salvando status da sessão na base de dados");
         statusRepository.save(statusEntity);
+    }
+
+    public SessionStatusEntity getSessionBySessionId(Long sessionId) {
+        return statusRepository.findBySessionId(sessionId);
     }
 
     private SessionStatusEntity convertDtoToEntity(SessionStatusDto sessionStatus) {

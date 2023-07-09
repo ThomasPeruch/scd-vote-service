@@ -2,6 +2,7 @@ package com.tperuch.voteservice.service;
 
 import com.tperuch.voteservice.dto.VoteDto;
 import com.tperuch.voteservice.dto.response.VoteResultResponseDto;
+import com.tperuch.voteservice.entity.SessionStatusEntity;
 import com.tperuch.voteservice.entity.VoteEntity;
 import com.tperuch.voteservice.repository.VoteRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class VoteService {
@@ -25,10 +27,13 @@ public class VoteService {
 
     public VoteDto saveVote(VoteDto voteDto){
         logger.info("Salvando voto - id do associado:{}", voteDto.getIdAssociate());
+        checkIfSessionExists(voteDto.getIdSession());
         if(!isSessionOpen(voteDto.getIdSession())){
+            logger.error("A sessão informada não esta aberta para votação, escolha outra");
             throw new EntityNotFoundException("A sessão informada não esta aberta para votação, escolha outra");
         }
         if(associateAlreadyVotedInSession(voteDto.getIdSession(), voteDto.getIdAssociate())){
+            logger.error("O associado informado ja votou nessa sessão de votação");
             throw new IllegalArgumentException(
                     "O associado informado ja votou nessa sessão de votação - ID do associado "+voteDto.getIdAssociate()+ " - ID da sessão "+voteDto.getIdSession());
         }
@@ -38,17 +43,31 @@ public class VoteService {
         return modelMapper.map(savedEntity, VoteDto.class);
     }
 
+    private boolean sessionNotExists(Long sessionId) {
+        SessionStatusEntity statusEntity = sessionStatusService.getSessionBySessionId(sessionId);
+        return Objects.isNull(statusEntity);
+    }
+
     private boolean isSessionOpen(Long sessionId) {
         logger.info("Verificando status da sessão - id da sessão:{}", sessionId);
         return sessionStatusService.isSessionOpen(sessionId);
     }
 
     public VoteResultResponseDto getVotesAndSessionResult(Long sessionId){
+        checkIfSessionExists(sessionId);
         if(isSessionOpen(sessionId)){
+            logger.error("Essa votação segue em aberto, para visualizar o resultado selecione uma já encerrada");
             throw new IllegalArgumentException("Essa votação segue em aberto, para visualizar o resultado selecione uma já encerrada");
         }
         List<VoteEntity> votes = getVotesFromSession(sessionId);
         return buildResultDto(votes, sessionId);
+    }
+
+    private void checkIfSessionExists(Long sessionId) {
+        if(sessionNotExists(sessionId)){
+            logger.error("A sessão informada não existe");
+            throw new EntityNotFoundException("A sessão informada não existe");
+        }
     }
 
     private List<VoteEntity> getVotesFromSession(Long sessionId) {
