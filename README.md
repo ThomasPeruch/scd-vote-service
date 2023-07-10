@@ -9,6 +9,7 @@ Certifique-se de ter as seguintes portas livres na sua máquina para subir a apl
 - 8081 -> porta ocupada pela própria aplicação
 - 5433 -> banco de dados PostgreSQL
 
+Na pasta raíz do projeto executar o comando docker compose up -d, esse comando criará containers com as especificações descritas no arquivo docker-compose.yml, nesse caso subirá uma instância do banco PostgreSQL.
 
 <h2>Descrição do projeto</h2>
 Esse é o vote-service serviço responsavél por armazenar e gerenecias votos e disponibilizar o resultado de uma sessão de votação.
@@ -58,3 +59,5 @@ Response:
     "sessionStatus":"OPEN
 }
 ````
+Swagger do serviço : http://127.0.0.1:8081/swagger-ui.html (serviço deve estar rodando)
+Inteface do RabbitMq : http://127.0.0.0:15672/#/ (container com o rabbit deve estar rodando)
