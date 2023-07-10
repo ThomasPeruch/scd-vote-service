@@ -1,6 +1,7 @@
 package com.tperuch.voteservice.service;
 
 import com.tperuch.voteservice.dto.VoteDto;
+import com.tperuch.voteservice.dto.response.VoteResponseDto;
 import com.tperuch.voteservice.dto.response.VoteResultResponseDto;
 import com.tperuch.voteservice.entity.SessionStatusEntity;
 import com.tperuch.voteservice.entity.VoteEntity;
@@ -25,7 +26,7 @@ public class VoteService {
     private ModelMapper modelMapper;
     Logger logger = LoggerFactory.getLogger(VoteService.class);
 
-    public VoteDto saveVote(VoteDto voteDto){
+    public VoteResponseDto saveVote(VoteDto voteDto){
         logger.info("Salvando voto - id do associado:{}", voteDto.getIdAssociate());
         checkIfSessionExists(voteDto.getIdSession());
         if(!isSessionOpen(voteDto.getIdSession())){
@@ -35,22 +36,12 @@ public class VoteService {
         if(associateAlreadyVotedInSession(voteDto.getIdSession(), voteDto.getIdAssociate())){
             logger.error("O associado informado ja votou nessa sessão de votação");
             throw new IllegalArgumentException(
-                    "O associado informado ja votou nessa sessão de votação - ID do associado "+voteDto.getIdAssociate()+ " - ID da sessão "+voteDto.getIdSession());
+                    "O associado "+voteDto.getIdAssociate()+ " ja votou na sessao "+voteDto.getIdSession());
         }
         VoteEntity entity = buildVoteEntity(voteDto);
         logger.info("Salvando voto");
         VoteEntity savedEntity = voteRepository.save(entity);
-        return modelMapper.map(savedEntity, VoteDto.class);
-    }
-
-    private boolean sessionNotExists(Long sessionId) {
-        SessionStatusEntity statusEntity = sessionStatusService.getSessionBySessionId(sessionId);
-        return Objects.isNull(statusEntity);
-    }
-
-    private boolean isSessionOpen(Long sessionId) {
-        logger.info("Verificando status da sessão - id da sessão:{}", sessionId);
-        return sessionStatusService.isSessionOpen(sessionId);
+        return modelMapper.map(savedEntity, VoteResponseDto.class);
     }
 
     public VoteResultResponseDto getVotesAndSessionResult(Long sessionId){
@@ -63,10 +54,20 @@ public class VoteService {
         return buildResultDto(votes, sessionId);
     }
 
+    private boolean sessionNotExists(Long sessionId) {
+        SessionStatusEntity statusEntity = sessionStatusService.getSessionBySessionId(sessionId);
+        return Objects.isNull(statusEntity);
+    }
+
+    private boolean isSessionOpen(Long sessionId) {
+        logger.info("Verificando status da sessão - id da sessão:{}", sessionId);
+        return sessionStatusService.isSessionOpen(sessionId);
+    }
+
     private void checkIfSessionExists(Long sessionId) {
         if(sessionNotExists(sessionId)){
-            logger.error("A sessão informada não existe");
-            throw new EntityNotFoundException("A sessão informada não existe");
+            logger.error("A sessao informada nao existe");
+            throw new EntityNotFoundException("A sessao informada nao existe");
         }
     }
 
@@ -91,8 +92,8 @@ public class VoteService {
         int result = Integer.compare(votesForYes, votesForNo);
         return switch (result) {
             case 0 -> "EMPATE";
-            case 1 -> "REJEITADA";
-            default -> "APROVADA";
+            case 1 -> "APROVADA";
+            default -> "REJEITADA";
         };
     }
 

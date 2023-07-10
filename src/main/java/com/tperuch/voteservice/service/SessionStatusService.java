@@ -1,7 +1,6 @@
 package com.tperuch.voteservice.service;
 
 import com.google.gson.Gson;
-import com.tperuch.voteservice.RabbitMqListener;
 import com.tperuch.voteservice.dto.SessionStatusDto;
 import com.tperuch.voteservice.dto.response.SessionStatusResponseDto;
 import com.tperuch.voteservice.entity.SessionStatusEntity;
@@ -31,14 +30,6 @@ public class SessionStatusService {
         return entities.stream().map(this::mapToSessionStatusResponseDto).toList();
     }
 
-    private SessionStatusResponseDto mapToSessionStatusResponseDto(SessionStatusEntity entity) {
-        SessionStatusResponseDto dto = new SessionStatusResponseDto();
-        dto.setIdSession(entity.getSessionId());
-        dto.setSessionStatus(entity.getSessionStatus());
-        dto.setId(entity.getId());
-        return dto;
-    }
-
     public void refreshSessionStatus(Message message){
         byte[] messageConverted = convertMessageToBytes(message);
         String json = convertBytesToJson(messageConverted);
@@ -48,15 +39,23 @@ public class SessionStatusService {
         updateEntity(entity);
     }
 
+    public SessionStatusEntity getSessionBySessionId(Long sessionId) {
+        return statusRepository.findBySessionId(sessionId);
+    }
+
+    private SessionStatusResponseDto mapToSessionStatusResponseDto(SessionStatusEntity entity) {
+        SessionStatusResponseDto dto = new SessionStatusResponseDto();
+        dto.setIdSession(entity.getSessionId());
+        dto.setSessionStatus(entity.getSessionStatus());
+        dto.setId(entity.getId());
+        return dto;
+    }
+
     private void updateEntity(SessionStatusEntity entity) {
         SessionStatusEntity statusEntity = getSessionBySessionId(entity.getSessionId());
         statusEntity.setSessionStatus(entity.getSessionStatus());
         logger.info("Salvando status da sessão na base de dados");
         statusRepository.save(statusEntity);
-    }
-
-    public SessionStatusEntity getSessionBySessionId(Long sessionId) {
-        return statusRepository.findBySessionId(sessionId);
     }
 
     private SessionStatusEntity convertDtoToEntity(SessionStatusDto sessionStatus) {
