@@ -9,7 +9,7 @@ public class VoteDto {
     @Positive(message = "o id do associado deve ser positivo e maior que zero")
     private Long idAssociate;
     @NotNull(message = "voto deve ser informado")
-    private boolean vote;
+    private Boolean vote;
 
     public Long getIdSession() {
         return idSession;
@@ -27,11 +27,11 @@ public class VoteDto {
         this.idAssociate = idAssociate;
     }
 
-    public boolean isVote() {
+    public Boolean isVote() {
         return vote;
     }
 
-    public void setVote(boolean vote) {
+    public void setVote(Boolean vote) {
         this.vote = vote;
     }
 }

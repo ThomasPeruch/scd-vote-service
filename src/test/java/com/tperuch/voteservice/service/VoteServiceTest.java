@@ -6,7 +6,6 @@ import com.tperuch.voteservice.dto.response.VoteResultResponseDto;
 import com.tperuch.voteservice.entity.SessionStatusEntity;
 import com.tperuch.voteservice.entity.VoteEntity;
 import com.tperuch.voteservice.repository.VoteRepository;
-import com.tperuch.voteservice.stub.vote.VoteEntityStub;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +34,8 @@ class VoteServiceTest {
     private VoteRepository voteRepository;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private SessionResultService sessionResultService;
     @InjectMocks
     private VoteService voteService;
 
@@ -90,11 +91,11 @@ class VoteServiceTest {
 
         when(sessionStatusService.getSessionBySessionId(1L)).thenReturn(statusEntity);
         when(sessionStatusService.isSessionOpen(1L)).thenReturn(true);
-        when(voteRepository.existsBySessionIdAndAssociateId(1L,1L)).thenReturn(true);
+        when(voteRepository.existsBySessionIdAndAssociateId(1L, 1L)).thenReturn(true);
 
         Exception exception = assertThrows(Exception.class, () -> voteService.saveVote(voteDto));
 
-        assertEquals("O associado "+voteDto.getIdAssociate()+" ja votou na sessao "+voteDto.getIdSession(),exception.getMessage());
+        assertEquals("O associado " + voteDto.getIdAssociate() + " ja votou na sessao " + voteDto.getIdSession(), exception.getMessage());
         assertEquals(exception.getClass().getName(), IllegalArgumentException.class.getName());
     }
 
@@ -105,6 +106,7 @@ class VoteServiceTest {
         when(sessionStatusService.getSessionBySessionId(1L)).thenReturn(statusEntity);
         when(sessionStatusService.isSessionOpen(1L)).thenReturn(false);
         when(voteRepository.findBySessionId(1L)).thenReturn(votes);
+        doNothing().when(sessionResultService).sendResultToQueue(any());
 
         VoteResultResponseDto result = voteService.getVotesAndSessionResult(1L);
 
@@ -121,7 +123,7 @@ class VoteServiceTest {
         when(sessionStatusService.getSessionBySessionId(1L)).thenReturn(statusEntity);
         when(sessionStatusService.isSessionOpen(1L)).thenReturn(false);
         when(voteRepository.findBySessionId(1L)).thenReturn(votes);
-
+        doNothing().when(sessionResultService).sendResultToQueue(any());
         VoteResultResponseDto result = voteService.getVotesAndSessionResult(1L);
 
         assertEquals("EMPATE", result.getResult());
@@ -136,7 +138,7 @@ class VoteServiceTest {
         when(sessionStatusService.getSessionBySessionId(1L)).thenReturn(statusEntity);
         when(sessionStatusService.isSessionOpen(1L)).thenReturn(false);
         when(voteRepository.findBySessionId(1L)).thenReturn(votes);
-
+        doNothing().when(sessionResultService).sendResultToQueue(any());
         VoteResultResponseDto result = voteService.getVotesAndSessionResult(1L);
 
         assertEquals("REJEITADA", result.getResult());
@@ -150,7 +152,7 @@ class VoteServiceTest {
 
         Exception exception = assertThrows(Exception.class, () -> voteService.getVotesAndSessionResult(1L));
 
-        assertEquals("Essa votação segue em aberto, para visualizar o resultado selecione uma já encerrada",exception.getMessage());
+        assertEquals("Essa votação segue em aberto, para visualizar o resultado selecione uma já encerrada", exception.getMessage());
         assertEquals(exception.getClass().getName(), IllegalArgumentException.class.getName());
     }
 }

@@ -7,6 +7,7 @@ import com.tperuch.voteservice.entity.SessionStatusEntity;
 import com.tperuch.voteservice.entity.VoteEntity;
 import com.tperuch.voteservice.repository.VoteRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.annotations.NaturalId;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ public class VoteService {
     private VoteRepository voteRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private SessionResultService sessionResultService;
     Logger logger = LoggerFactory.getLogger(VoteService.class);
 
     public VoteResponseDto saveVote(VoteDto voteDto){
@@ -51,7 +54,9 @@ public class VoteService {
             throw new IllegalArgumentException("Essa votação segue em aberto, para visualizar o resultado selecione uma já encerrada");
         }
         List<VoteEntity> votes = getVotesFromSession(sessionId);
-        return buildResultDto(votes, sessionId);
+        VoteResultResponseDto result = buildResultDto(votes, sessionId);
+        sessionResultService.sendResultToQueue(result);
+        return result;
     }
 
     private boolean sessionNotExists(Long sessionId) {

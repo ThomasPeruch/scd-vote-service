@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class SessionStatusService {
@@ -36,7 +37,7 @@ public class SessionStatusService {
         logger.info("Convertendo json da mensagem para objeto");
         SessionStatusDto sessionStatus = convertJsonToDto(json);
         SessionStatusEntity entity = convertDtoToEntity(sessionStatus);
-        updateEntity(entity);
+        upsertEntity(entity);
     }
 
     public SessionStatusEntity getSessionBySessionId(Long sessionId) {
@@ -51,11 +52,15 @@ public class SessionStatusService {
         return dto;
     }
 
-    private void updateEntity(SessionStatusEntity entity) {
+    private void upsertEntity(SessionStatusEntity entity) {
         SessionStatusEntity statusEntity = getSessionBySessionId(entity.getSessionId());
-        statusEntity.setSessionStatus(entity.getSessionStatus());
         logger.info("Salvando status da sessão na base de dados");
-        statusRepository.save(statusEntity);
+        if(Objects.isNull(statusEntity)){
+            statusRepository.save(entity);
+        }else {
+            statusEntity.setSessionStatus(entity.getSessionStatus());
+            statusRepository.save(statusEntity);
+        }
     }
 
     private SessionStatusEntity convertDtoToEntity(SessionStatusDto sessionStatus) {
