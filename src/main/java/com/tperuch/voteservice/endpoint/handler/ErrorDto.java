@@ -4,24 +4,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class ErrorDto {
-    private LocalDateTime time;
+    private String time;
     private String exceptionClass;
     private int httpStatus;
     private List<String> erros;
 
-    public ErrorDto(String exceptionClass, int httpStatus, List<String> erros) {
-        this.time = LocalDateTime.now();
+    public ErrorDto(String exceptionClass, String time, int httpStatus, List<String> erros) {
+        this.time = time;
         this.exceptionClass = exceptionClass;
         this.httpStatus = httpStatus;
         this.erros = erros;
     }
 
-    public LocalDateTime getTime() {
+    public String getTime() {
         return time;
-    }
-
-    public void setTime(LocalDateTime time) {
-        this.time = time;
     }
 
     public String getExceptionClass() {
